@@ -1,10 +1,10 @@
-package com.sndp.kunnathunadu.uniondatabank;
+package com.sndp.kunnathunadu.uniondatabank.activites;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.view.View;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -12,9 +12,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+
+import com.sndp.kunnathunadu.uniondatabank.R;
+import com.sndp.kunnathunadu.uniondatabank.fragments.UnionSakhaBranchesFragment;
+import com.sndp.kunnathunadu.uniondatabank.fragments.dummy.DummyContent;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, UnionSakhaBranchesFragment.OnListFragmentInteractionListener {
+    public static final String UNION_SAKHA_BRANCH = "UnionSakhaBranchesFragment";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,12 +86,17 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
+        if (id == R.id.union_samithi) {
             // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        } else if (id == R.id.youth_samithi) {
 
-        } else if (id == R.id.nav_slideshow) {
-
+        } else if (id == R.id.union_branches) {
+            FragmentManager manager = getSupportFragmentManager();
+            UnionSakhaBranchesFragment fragment = UnionSakhaBranchesFragment.newInstance(1);
+            manager.beginTransaction()
+                    .replace(R.id.content_main, fragment, UNION_SAKHA_BRANCH)
+                    .addToBackStack(UNION_SAKHA_BRANCH)
+                    .commit();
         } else if (id == R.id.nav_manage) {
 
         } else if (id == R.id.nav_share) {
@@ -97,5 +108,10 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    public void onListFragmentInteraction(DummyContent.DummyItem item) {
+
     }
 }
