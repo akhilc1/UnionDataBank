@@ -1,6 +1,5 @@
 package com.sndp.kunnathunadu.uniondatabank.fragments;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -30,7 +29,7 @@ import java.util.Set;
 /**
  * A fragment representing a list of Items.
  * <p/>
- * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
+ * Activities containing this fragment MUST implement the {@link }
  * interface.
  */
 public class UnionSakhaBranchesFragment extends Fragment {
@@ -44,7 +43,6 @@ public class UnionSakhaBranchesFragment extends Fragment {
     private SakhaListRecyclerAdapter adapter;
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference firebaseDatabaseReference;
-    private OnListFragmentInteractionListener listener;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -107,7 +105,7 @@ public class UnionSakhaBranchesFragment extends Fragment {
             recyclerView.setLayoutManager(new GridLayoutManager(view.getContext(), mColumnCount));
         }
         sakhasList = new ArrayList<>();
-        adapter = new SakhaListRecyclerAdapter(listener);
+        adapter = new SakhaListRecyclerAdapter();
         recyclerView.setAdapter(adapter);
         return view;
     }
@@ -154,35 +152,4 @@ public class UnionSakhaBranchesFragment extends Fragment {
         return prefs.getStringSet("sakhas", null);
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnListFragmentInteractionListener) {
-            listener = (OnListFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnListFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        listener = null;
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnListFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onListFragmentInteraction();
-    }
 }

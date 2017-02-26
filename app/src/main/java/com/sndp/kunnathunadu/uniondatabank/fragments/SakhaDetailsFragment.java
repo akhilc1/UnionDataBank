@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.sndp.kunnathunadu.uniondatabank.R;
 
@@ -15,6 +16,7 @@ import com.sndp.kunnathunadu.uniondatabank.R;
 
 public class SakhaDetailsFragment extends Fragment {
     public static final String SAKHA_NAME_PARAMS = "sakha name";
+    private String sakahNameToFetch;
 
     public static SakhaDetailsFragment newInstance(String sakhaName) {
 
@@ -23,6 +25,17 @@ public class SakhaDetailsFragment extends Fragment {
         SakhaDetailsFragment fragment = new SakhaDetailsFragment();
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments().get(SAKHA_NAME_PARAMS) != null) {
+            sakahNameToFetch = (String) getArguments().get(SAKHA_NAME_PARAMS);
+            Toast.makeText(getActivity(), "Sakaha Name: " + sakahNameToFetch, Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(getActivity(), "Sakaha Name: Null", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Nullable

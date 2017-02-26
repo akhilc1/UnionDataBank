@@ -13,14 +13,21 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import com.sndp.kunnathunadu.uniondatabank.R;
+import com.sndp.kunnathunadu.uniondatabank.fragments.SakhaDetailsFragment;
 import com.sndp.kunnathunadu.uniondatabank.fragments.UnionSakhaBranchesFragment;
-import com.sndp.kunnathunadu.uniondatabank.fragments.dummy.DummyContent;
+import com.sndp.kunnathunadu.uniondatabank.greenrobot.events.ShowSakhaDetailsEvents;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, UnionSakhaBranchesFragment.OnListFragmentInteractionListener {
-    public static final String UNION_SAKHA_BRANCH = "UnionSakhaBranchesFragment";
+        implements NavigationView.OnNavigationItemSelectedListener {
+    public static final String UNION_SAKHAS_FRAGMEN = "UnionSakhaBranchesFragment";
+    public static final String SAKHA_DETAILS_FRAGMENT = "SakhaDetailsFragment";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +53,18 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -94,8 +113,8 @@ public class MainActivity extends AppCompatActivity
             FragmentManager manager = getSupportFragmentManager();
             UnionSakhaBranchesFragment fragment = UnionSakhaBranchesFragment.newInstance(1);
             manager.beginTransaction()
-                    .replace(R.id.content_main, fragment, UNION_SAKHA_BRANCH)
-                    .addToBackStack(UNION_SAKHA_BRANCH)
+                    .replace(R.id.content_main, fragment, UNION_SAKHAS_FRAGMEN)
+                    .addToBackStack(UNION_SAKHAS_FRAGMEN)
                     .commit();
         } else if (id == R.id.nav_manage) {
 
@@ -110,8 +129,14 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    @Override
-    public void onListFragmentInteraction(DummyContent.DummyItem item) {
-
+    @Subscribe(threadMode = ThreadMode.POSTING)
+    public void onMessageEvent(ShowSakhaDetailsEvents event) {
+        Toast.makeText(this, "Sakha: Activity " + event.getSakhaName(), Toast.LENGTH_SHORT).show();
+        SakhaDetailsFragment fragment = SakhaDetailsFragment.newInstance(event.getSakhaName());
+        FragmentManager manager = getSupportFragmentManager();
+        manager.beginTransaction()
+                .replace(R.id.content_main, fragment, SAKHA_DETAILS_FRAGMENT)
+                .addToBackStack(SAKHA_DETAILS_FRAGMENT)
+                .commit();
     }
 }

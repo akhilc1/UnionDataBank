@@ -7,7 +7,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.sndp.kunnathunadu.uniondatabank.R;
-import com.sndp.kunnathunadu.uniondatabank.fragments.UnionSakhaBranchesFragment;
+import com.sndp.kunnathunadu.uniondatabank.greenrobot.events.ShowSakhaDetailsEvents;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,12 +22,9 @@ import java.util.List;
 public class SakhaListRecyclerAdapter extends RecyclerView.Adapter<SakhaListRecyclerAdapter.ViewHolder> {
 
     private List<String> sakhaList = null;
-    private UnionSakhaBranchesFragment.OnListFragmentInteractionListener mListener = null;
 
-    public SakhaListRecyclerAdapter(UnionSakhaBranchesFragment.OnListFragmentInteractionListener
-                                            listener) {
+    public SakhaListRecyclerAdapter() {
         sakhaList = new ArrayList<>();
-        mListener = listener;
     }
 
     public void setSakhas(List<String> sakhaList) {
@@ -40,8 +39,15 @@ public class SakhaListRecyclerAdapter extends RecyclerView.Adapter<SakhaListRecy
     }
 
     @Override
-    public void onBindViewHolder(final ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, final int position) {
         holder.sakhaNameTV.setText(sakhaList.get(position));
+        holder.sakhaNameTV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EventBus.getDefault().post(new ShowSakhaDetailsEvents(sakhaList.get(
+                        holder.getAdapterPosition())));
+            }
+        });
     }
 
     @Override
