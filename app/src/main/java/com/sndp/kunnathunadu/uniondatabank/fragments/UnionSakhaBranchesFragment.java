@@ -1,18 +1,31 @@
 package com.sndp.kunnathunadu.uniondatabank.fragments;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.sndp.kunnathunadu.uniondatabank.R;
-import com.sndp.kunnathunadu.uniondatabank.fragments.dummy.DummyContent;
-import com.sndp.kunnathunadu.uniondatabank.fragments.dummy.DummyContent.DummyItem;
+import com.sndp.kunnathunadu.uniondatabank.adapters.SakhaListRecyclerAdapter;
+import com.sndp.kunnathunadu.uniondatabank.utils.Constants;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * A fragment representing a list of Items.
@@ -21,12 +34,17 @@ import com.sndp.kunnathunadu.uniondatabank.fragments.dummy.DummyContent.DummyIte
  * interface.
  */
 public class UnionSakhaBranchesFragment extends Fragment {
-
-    // TODO: Customize parameter argument names
+    public static final String shared_pref = "my pref";
     private static final String ARG_COLUMN_COUNT = "column-count";
-    // TODO: Customize parameters
+    private String TAG = getClass().getSimpleName();
     private int mColumnCount = 1;
-    private OnListFragmentInteractionListener mListener;
+    private List<String> sakhasList;
+    private ProgressBar progressBar;
+    private RecyclerView recyclerView;
+    private SakhaListRecyclerAdapter adapter;
+    private FirebaseDatabase firebaseDatabase;
+    private DatabaseReference firebaseDatabaseReference;
+    private OnListFragmentInteractionListener listener;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -45,6 +63,28 @@ public class UnionSakhaBranchesFragment extends Fragment {
         return fragment;
     }
 
+    public static String toCamelCase(String inputString) {
+        String result = "";
+        if (inputString.length() == 0) {
+            return result;
+        }
+        char firstChar = inputString.charAt(0);
+        char firstCharToUpperCase = Character.toUpperCase(firstChar);
+        result = result + firstCharToUpperCase;
+        for (int i = 1; i < inputString.length(); i++) {
+            char currentChar = inputString.charAt(i);
+            char previousChar = inputString.charAt(i - 1);
+            if (previousChar == ' ') {
+                char currentCharToUpperCase = Character.toUpperCase(currentChar);
+                result = result + currentCharToUpperCase;
+            } else {
+                char currentCharToLowerCase = Character.toLowerCase(currentChar);
+                result = result + currentCharToLowerCase;
+            }
+        }
+        return result;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,27 +98,67 @@ public class UnionSakhaBranchesFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_item_list, container, false);
+        progressBar = (ProgressBar) view.findViewById(R.id.progress_bar);
+        recyclerView = (RecyclerView) view.findViewById(R.id.list);
 
-        // Set the adapter
-        if (view instanceof RecyclerView) {
-            Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
-            if (mColumnCount <= 1) {
-                recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            } else {
-                recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
-            }
-            recyclerView.setAdapter(new MyItemRecyclerViewAdapter(DummyContent.ITEMS, mListener));
+        if (mColumnCount <= 1) {
+            recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
+        } else {
+            recyclerView.setLayoutManager(new GridLayoutManager(view.getContext(), mColumnCount));
         }
+        sakhasList = new ArrayList<>();
+        adapter = new SakhaListRecyclerAdapter(listener);
+        recyclerView.setAdapter(adapter);
         return view;
     }
 
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        try {
+            firebaseDatabase = FirebaseDatabase.getInstance();
+            firebaseDatabaseReference = firebaseDatabase.getReference(Constants.FIREBASE_SAKHA_TAG);
+            firebaseDatabaseReference.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Log.d(TAG, "onDataChange: ");
+                    sakhasList = (List<String>) dataSnapshot.getValue();
+                    adapter.setSakhas(sakhasList);
+                    adapter.notifyDataSetChanged();
+                    progressBar.setVisibility(View.INVISIBLE);
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Log.d(TAG, "onCancelled: ");
+                }
+            });
+
+            Log.d("", "onViewCreated: ");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void writeSharedPref(Set<String> sakahas) {
+        SharedPreferences preferences = getContext().getSharedPreferences(shared_pref, 0);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putStringSet("sakhas", sakahas);
+        editor.apply();
+
+    }
+
+    private Set<String> readSharedPrefs() {
+        SharedPreferences prefs = getContext().getSharedPreferences(shared_pref, 0);
+        return prefs.getStringSet("sakhas", null);
+    }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof OnListFragmentInteractionListener) {
-            mListener = (OnListFragmentInteractionListener) context;
+            listener = (OnListFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnListFragmentInteractionListener");
@@ -88,7 +168,7 @@ public class UnionSakhaBranchesFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
+        listener = null;
     }
 
     /**
@@ -103,6 +183,6 @@ public class UnionSakhaBranchesFragment extends Fragment {
      */
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentInteraction(DummyItem item);
+        void onListFragmentInteraction();
     }
 }
