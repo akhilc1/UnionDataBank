@@ -1,6 +1,7 @@
 package com.sndp.kunnathunadu.uniondatabank.activites;
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -10,6 +11,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,15 +21,29 @@ import com.sndp.kunnathunadu.uniondatabank.R;
 import com.sndp.kunnathunadu.uniondatabank.fragments.SakhaDetailsFragment;
 import com.sndp.kunnathunadu.uniondatabank.fragments.UnionSakhaBranchesFragment;
 import com.sndp.kunnathunadu.uniondatabank.greenrobot.events.ShowSakhaDetailsEvents;
+import com.sndp.kunnathunadu.uniondatabank.models.Member;
+import com.sndp.kunnathunadu.uniondatabank.models.Sakha;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import jxl.Cell;
+import jxl.Sheet;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     public static final String UNION_SAKHAS_FRAGMEN = "UnionSakhaBranchesFragment";
     public static final String SAKHA_DETAILS_FRAGMENT = "SakhaDetailsFragment";
+    private Sakha mulamkuzhi;
+    private String TAG = getClass().getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +69,94 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        try {
+            Workbook workbook = Workbook.getWorkbook(new File(Environment.getExternalStorageDirectory() + "/union.xls"));
+            Sheet parsableSheetMulamkuzhi = workbook.getSheet(8);
+            mulamkuzhi = new Sakha();
+
+            readMainMembers(parsableSheetMulamkuzhi, mulamkuzhi);
+            Log.d(TAG, "onCreate: ");
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (BiffException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void readMainMembers(Sheet readSheet, Sakha sakhaObject) {
+        try {
+            int presidentRow = readSheet.findCell("PRESIDENT").getRow();
+
+            Member president = new Member();
+            Cell[] recordPres = readSheet.getRow(presidentRow);
+
+            president.setName(recordPres[2].getContents());
+            if (recordPres[3].getContents() != null) {
+                president.setHouseName(recordPres[3].getContents());
+            }
+
+            if (recordPres[5].getContents() != null) {
+                List<String> phNos = new ArrayList<>();
+                phNos.add(recordPres[5].getContents());
+                president.setPhoneNumbers(phNos);
+            }
+            sakhaObject.setPresident(president);
+
+
+            int vpRow = readSheet.findCell("V. PRESIDENT").getRow();
+            Cell[] recordVP = readSheet.getRow(vpRow);
+            Member vicePresident = new Member();
+            vicePresident.setName(recordVP[2].getContents());
+            if (recordPres[3].getContents() != null) {
+                vicePresident.setHouseName(recordVP[3].getContents());
+            }
+
+            if (recordVP[5].getContents() != null) {
+                List<String> phNos = new ArrayList<>();
+                phNos.add(recordVP[5].getContents());
+                vicePresident.setPhoneNumbers(phNos);
+            }
+            sakhaObject.setVicePresident(vicePresident);
+
+
+            int secRow = readSheet.findCell("SECRETARY").getRow();
+            Cell[] recordSec = readSheet.getRow(secRow);
+            Member secretary = new Member();
+            secretary.setName(recordSec[2].getContents());
+            if (recordSec[3].getContents() != null) {
+                secretary.setHouseName(recordSec[3].getContents());
+            }
+
+            if (recordSec[5].getContents() != null) {
+                List<String> phNos = new ArrayList<>();
+                phNos.add(recordSec[5].getContents());
+                secretary.setPhoneNumbers(phNos);
+            }
+
+            sakhaObject.setSecretary(secretary);
+
+
+            int unComm = readSheet.findCell("U. COMMITTEE").getRow();
+            Cell[] recordunComm = readSheet.getRow(unComm);
+            Member unionComm = new Member();
+
+            unionComm.setName(recordunComm[2].getContents());
+            if (recordSec[3].getContents() != null) {
+                unionComm.setHouseName(recordunComm[3].getContents());
+            }
+
+            if (recordunComm[5].getContents() != null) {
+                List<String> phNos = new ArrayList<>();
+                phNos.add(recordunComm[5].getContents());
+                unionComm.setPhoneNumbers(phNos);
+            }
+            sakhaObject.setUnionCommittee(unionComm);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
