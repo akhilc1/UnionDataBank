@@ -78,8 +78,9 @@ MainActivity extends AppCompatActivity
             Sheet parsableSheetMulamkuzhi = workbook.getSheet(8);
             mulamkuzhi = new Sakha();
 
-            readMainMembers(parsableSheetMulamkuzhi, mulamkuzhi);
-            read7CommitteeMembers(parsableSheetMulamkuzhi, mulamkuzhi);
+            mulamkuzhi = readMainMembers(parsableSheetMulamkuzhi, mulamkuzhi);
+            mulamkuzhi.setCommitteeMembers(read7CommitteeMembers(parsableSheetMulamkuzhi, mulamkuzhi));
+            mulamkuzhi.setPanchyathCommittee(readPanchayathCommittee(parsableSheetMulamkuzhi, mulamkuzhi));
             Log.d(TAG, "onCreate: ");
         } catch (IOException e) {
             e.printStackTrace();
@@ -89,7 +90,26 @@ MainActivity extends AppCompatActivity
 
     }
 
-    private void read7CommitteeMembers(Sheet inputSheet, Sakha sakhaObject) {
+    private List<Member> readPanchayathCommittee(Sheet inputSheet, Sakha sakhaObject) {
+        int initRow = inputSheet.findCell(" PANCHAYATH COMMITTEE MEMBERS").getRow();
+        List<Member> panchayathCommitteeMembers = new ArrayList<>();
+        initRow += 2;
+        for (int i = initRow; i < initRow + 3; i++) {
+            Cell[] current = inputSheet.getRow(i);
+            Member member = new Member();
+            member.setName(UtilityMethods.toCamelCase(current[1].getContents()));
+            List<String> numbers = new ArrayList<>();
+            numbers.add(current[5].getContents());
+            member.setPhoneNumbers(numbers);
+            String houseName = current[2].getContents();
+            member.setHouseName(houseName);
+            panchayathCommitteeMembers.add(member);
+        }
+        Log.d(TAG, "readPanchayathCommittee: ");
+        return panchayathCommitteeMembers;
+    }
+
+    private List<Member> read7CommitteeMembers(Sheet inputSheet, Sakha sakhaObject) {
         int initRow = inputSheet.findCell("COMMITTEE MEMBERS").getRow();
         List<Member> committeeMembers = new ArrayList<>();
 
@@ -102,23 +122,26 @@ MainActivity extends AppCompatActivity
             List<String> phoneNumbers = new ArrayList<>();
             phoneNumbers.add(phone);
             cMember.setPhoneNumbers(phoneNumbers);
+            String houseName = current[3].getContents();
+            cMember.setHouseName(houseName);
             committeeMembers.add(cMember);
             Log.d(TAG, "read7CommitteeMembers: " + current.length);
         }
         Log.d(TAG, "read7CommitteeMembers: ");
+        return committeeMembers;
     }
 
     //Naveen
-    private void readMainMembers(Sheet readSheet, Sakha sakhaObject) {
+    private Sakha readMainMembers(Sheet readSheet, Sakha sakhaObject) {
         try {
             int presidentRow = readSheet.findCell("PRESIDENT").getRow();
 
             Member president = new Member();
             Cell[] recordPres = readSheet.getRow(presidentRow);
 
-            president.setName(recordPres[2].getContents());
+            president.setName(UtilityMethods.toCamelCase(recordPres[2].getContents()));
             if (recordPres[3].getContents() != null) {
-                president.setHouseName(recordPres[3].getContents());
+                president.setHouseName(UtilityMethods.toCamelCase(recordPres[3].getContents()));
             }
 
             if (recordPres[5].getContents() != null) {
@@ -132,9 +155,9 @@ MainActivity extends AppCompatActivity
             int vpRow = readSheet.findCell("V. PRESIDENT").getRow();
             Cell[] recordVP = readSheet.getRow(vpRow);
             Member vicePresident = new Member();
-            vicePresident.setName(recordVP[2].getContents());
+            vicePresident.setName(UtilityMethods.toCamelCase(recordVP[2].getContents()));
             if (recordPres[3].getContents() != null) {
-                vicePresident.setHouseName(recordVP[3].getContents());
+                vicePresident.setHouseName(UtilityMethods.toCamelCase(recordVP[3].getContents()));
             }
 
             if (recordVP[5].getContents() != null) {
@@ -148,9 +171,9 @@ MainActivity extends AppCompatActivity
             int secRow = readSheet.findCell("SECRETARY").getRow();
             Cell[] recordSec = readSheet.getRow(secRow);
             Member secretary = new Member();
-            secretary.setName(recordSec[2].getContents());
+            secretary.setName(UtilityMethods.toCamelCase(recordSec[2].getContents()));
             if (recordSec[3].getContents() != null) {
-                secretary.setHouseName(recordSec[3].getContents());
+                secretary.setHouseName(UtilityMethods.toCamelCase(recordSec[3].getContents()));
             }
 
             if (recordSec[5].getContents() != null) {
@@ -166,9 +189,9 @@ MainActivity extends AppCompatActivity
             Cell[] recordunComm = readSheet.getRow(unComm);
             Member unionComm = new Member();
 
-            unionComm.setName(recordunComm[2].getContents());
+            unionComm.setName(UtilityMethods.toCamelCase(recordunComm[2].getContents()));
             if (recordSec[3].getContents() != null) {
-                unionComm.setHouseName(recordunComm[3].getContents());
+                unionComm.setHouseName(UtilityMethods.toCamelCase(recordunComm[3].getContents()));
             }
 
             if (recordunComm[5].getContents() != null) {
@@ -180,7 +203,7 @@ MainActivity extends AppCompatActivity
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        return sakhaObject;
     }
 
     @Override
