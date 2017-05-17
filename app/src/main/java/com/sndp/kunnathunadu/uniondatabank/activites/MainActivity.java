@@ -23,6 +23,7 @@ import com.sndp.kunnathunadu.uniondatabank.fragments.UnionSakhaBranchesFragment;
 import com.sndp.kunnathunadu.uniondatabank.greenrobot.events.ShowSakhaDetailsEvents;
 import com.sndp.kunnathunadu.uniondatabank.models.Member;
 import com.sndp.kunnathunadu.uniondatabank.models.Sakha;
+import com.sndp.kunnathunadu.uniondatabank.utils.UtilityMethods;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -38,11 +39,13 @@ import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
 
-public class MainActivity extends AppCompatActivity
+public class
+MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     public static final String UNION_SAKHAS_FRAGMEN = "UnionSakhaBranchesFragment";
     public static final String SAKHA_DETAILS_FRAGMENT = "SakhaDetailsFragment";
     private Sakha mulamkuzhi;
+    private List<Sakha> sakhaList = new ArrayList<>();
     private String TAG = getClass().getSimpleName();
 
     @Override
@@ -76,6 +79,7 @@ public class MainActivity extends AppCompatActivity
             mulamkuzhi = new Sakha();
 
             readMainMembers(parsableSheetMulamkuzhi, mulamkuzhi);
+            read7CommitteeMembers(parsableSheetMulamkuzhi, mulamkuzhi);
             Log.d(TAG, "onCreate: ");
         } catch (IOException e) {
             e.printStackTrace();
@@ -85,6 +89,26 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    private void read7CommitteeMembers(Sheet inputSheet, Sakha sakhaObject) {
+        int initRow = inputSheet.findCell("COMMITTEE MEMBERS").getRow();
+        List<Member> committeeMembers = new ArrayList<>();
+
+        initRow += 2;
+        for (int i = initRow; i < initRow + 7; i++) {
+            Cell[] current = inputSheet.getRow(i);
+            Member cMember = new Member();
+            cMember.setName(UtilityMethods.toCamelCase(current[2].getContents()));
+            String phone = current[5].getContents();
+            List<String> phoneNumbers = new ArrayList<>();
+            phoneNumbers.add(phone);
+            cMember.setPhoneNumbers(phoneNumbers);
+            committeeMembers.add(cMember);
+            Log.d(TAG, "read7CommitteeMembers: " + current.length);
+        }
+        Log.d(TAG, "read7CommitteeMembers: ");
+    }
+
+    //Naveen
     private void readMainMembers(Sheet readSheet, Sakha sakhaObject) {
         try {
             int presidentRow = readSheet.findCell("PRESIDENT").getRow();
