@@ -95,7 +95,7 @@ public class UnionSakhaBranchesFragment extends Fragment {
 
         try {
             firebaseDatabase = FirebaseDatabase.getInstance();
-            firebaseDatabaseReference = firebaseDatabase.getReference(Constants.FIREBASE_SAKHA_TAG);
+            firebaseDatabaseReference = firebaseDatabase.getReference(Constants.FIREBASE_SAKHAS_TAG);
             firebaseDatabaseReference.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {

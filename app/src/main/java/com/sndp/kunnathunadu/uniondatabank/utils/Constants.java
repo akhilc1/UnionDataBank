@@ -5,5 +5,6 @@ package com.sndp.kunnathunadu.uniondatabank.utils;
  */
 
 public class Constants {
-    public static final String FIREBASE_SAKHA_TAG = "sakhas";
+    public static final String FIREBASE_SAKHAS_TAG = "sakhas";
+    public static final String FIREBASE_SAKHA_DETAILS_TAG = "sakha-details";
 }

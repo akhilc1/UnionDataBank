@@ -1,7 +1,7 @@
 package com.sndp.kunnathunadu.uniondatabank.activites;
 
 import android.os.Bundle;
-import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -17,34 +17,35 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.sndp.kunnathunadu.uniondatabank.R;
 import com.sndp.kunnathunadu.uniondatabank.fragments.SakhaDetailsFragment;
 import com.sndp.kunnathunadu.uniondatabank.fragments.UnionSakhaBranchesFragment;
 import com.sndp.kunnathunadu.uniondatabank.greenrobot.events.ShowSakhaDetailsEvents;
 import com.sndp.kunnathunadu.uniondatabank.models.Member;
 import com.sndp.kunnathunadu.uniondatabank.models.Sakha;
+import com.sndp.kunnathunadu.uniondatabank.utils.Constants;
 import com.sndp.kunnathunadu.uniondatabank.utils.UtilityMethods;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import jxl.Cell;
 import jxl.Sheet;
-import jxl.Workbook;
-import jxl.read.biff.BiffException;
 
 public class
 MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     public static final String UNION_SAKHAS_FRAGMEN = "UnionSakhaBranchesFragment";
     public static final String SAKHA_DETAILS_FRAGMENT = "SakhaDetailsFragment";
-    private Sakha mulamkuzhi;
+    private Sakha sakha;
     private List<Sakha> sakhaList = new ArrayList<>();
     private String TAG = getClass().getSimpleName();
 
@@ -73,62 +74,131 @@ MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        try {
+        /*try {
             Workbook workbook = Workbook.getWorkbook(new File(Environment.getExternalStorageDirectory() + "/union.xls"));
-            Sheet parsableSheetMulamkuzhi = workbook.getSheet(8);
-            mulamkuzhi = new Sakha();
+            //Sheet parsableSheetMulamkuzhi = workbook.getSheet(8);
+            int sakhaCounter = 0;
+            for (Sheet sheet : workbook.getSheets()) {
+                Log.d(TAG, "onCreate: Sakhas Recorded: " + sakhaList.size());
+                if (sakhaCounter == 0) {
+                    sakhaCounter++;
+                    continue;
+                }
+                sakhaCounter++;
+                sakha = new Sakha();
 
-            mulamkuzhi = readMainMembers(parsableSheetMulamkuzhi, mulamkuzhi);
-            mulamkuzhi.setCommitteeMembers(read7CommitteeMembers(parsableSheetMulamkuzhi, mulamkuzhi));
-            mulamkuzhi.setPanchyathCommittee(readPanchayathCommittee(parsableSheetMulamkuzhi, mulamkuzhi));
+                String name = "";
+                //Cell[] cell0 = sheet.getRow(0);
+                Cell[] cell = sheet.getRow(1);
+                //Cell[] cell1 = sheet.getRow(2);
+                name = cell[0].getContents();
+                name = UtilityMethods.toCamelCase(name);
+                sakha.setSakhaName(name);
+                Log.d(TAG, "onCreate: SakahName: " + name);
+
+                sakha.setSakhaName(name);
+                sakha = readMainMembers(sheet, sakha);
+                sakha.setCommitteeMembers(read7CommitteeMembers(sheet, sakha));
+                sakha.setPanchyathCommittee(readPanchayathCommittee(sheet, sakha));
+                sakhaList.add(sakha);
+            }
+
+            writeSakhaDetailsToFirebase(sakhaList);
             Log.d(TAG, "onCreate: ");
         } catch (IOException e) {
             e.printStackTrace();
         } catch (BiffException e) {
             e.printStackTrace();
+        }*/
+
+    }
+
+    private void writeSakhaDetailsToFirebase(List<Sakha> sakhaList) {
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+
+        for (Sakha sakha : sakhaList) {
+            if (sakha.getSakhaName().length() > 3) {
+                databaseReference.child(Constants.FIREBASE_SAKHA_DETAILS_TAG).child(sakha.getSakhaName())
+                        .setValue(sakha).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        Log.d(TAG, "onComplete: ");
+                    }
+                });
+            }
         }
 
+//        DatabaseReference rootReference = firebaseDatabase.getReference();
+//        rootReference.setValue(sakhaList, new DatabaseReference.CompletionListener() {
+//            @Override
+//            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+//                Log.d(TAG, "onComplete: ");
+//            }
+//        });
     }
 
     private List<Member> readPanchayathCommittee(Sheet inputSheet, Sakha sakhaObject) {
-        int initRow = inputSheet.findCell(" PANCHAYATH COMMITTEE MEMBERS").getRow();
-        List<Member> panchayathCommitteeMembers = new ArrayList<>();
-        initRow += 2;
-        for (int i = initRow; i < initRow + 3; i++) {
-            Cell[] current = inputSheet.getRow(i);
-            Member member = new Member();
-            member.setName(UtilityMethods.toCamelCase(current[1].getContents()));
-            List<String> numbers = new ArrayList<>();
-            numbers.add(current[5].getContents());
-            member.setPhoneNumbers(numbers);
-            String houseName = current[2].getContents();
-            member.setHouseName(houseName);
-            panchayathCommitteeMembers.add(member);
+        Log.d(TAG, "readPanchayathCommittee: Sheet no" + inputSheet.getName());
+        try {
+            int initRow = inputSheet.findCell("PANCHAYATH COMMITTEE MEMBERS").getRow();
+            List<Member> panchayathCommitteeMembers = new ArrayList<>();
+            initRow += 2;
+            for (int i = initRow; i < initRow + 3; i++) {
+                try {
+                    Cell[] current = inputSheet.getRow(i);
+                    Member member = new Member();
+                    member.setName(UtilityMethods.toCamelCase(current[1].getContents()));
+                    List<String> numbers = new ArrayList<>();
+                    numbers.add(current[5].getContents());
+                    member.setPhoneNumbers(numbers);
+                    String houseName = current[2].getContents();
+                    member.setHouseName(houseName);
+                    panchayathCommitteeMembers.add(member);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    continue;
+                }
+            }
+            Log.d(TAG, "readPanchayathCommittee: ");
+            return panchayathCommitteeMembers;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        Log.d(TAG, "readPanchayathCommittee: ");
-        return panchayathCommitteeMembers;
+
+        return null;
     }
 
     private List<Member> read7CommitteeMembers(Sheet inputSheet, Sakha sakhaObject) {
-        int initRow = inputSheet.findCell("COMMITTEE MEMBERS").getRow();
-        List<Member> committeeMembers = new ArrayList<>();
+        try {
+            int initRow = inputSheet.findCell("COMMITTEE MEMBERS").getRow();
+            List<Member> committeeMembers = new ArrayList<>();
 
-        initRow += 2;
-        for (int i = initRow; i < initRow + 7; i++) {
-            Cell[] current = inputSheet.getRow(i);
-            Member cMember = new Member();
-            cMember.setName(UtilityMethods.toCamelCase(current[2].getContents()));
-            String phone = current[5].getContents();
-            List<String> phoneNumbers = new ArrayList<>();
-            phoneNumbers.add(phone);
-            cMember.setPhoneNumbers(phoneNumbers);
-            String houseName = current[3].getContents();
-            cMember.setHouseName(houseName);
-            committeeMembers.add(cMember);
-            Log.d(TAG, "read7CommitteeMembers: " + current.length);
+            initRow += 2;
+            for (int i = initRow; i < initRow + 7; i++) {
+                try {
+                    Cell[] current = inputSheet.getRow(i);
+                    Member cMember = new Member();
+                    cMember.setName(UtilityMethods.toCamelCase(current[2].getContents()));
+                    String phone = current[5].getContents();
+                    List<String> phoneNumbers = new ArrayList<>();
+                    phoneNumbers.add(phone);
+                    cMember.setPhoneNumbers(phoneNumbers);
+                    String houseName = current[3].getContents();
+                    cMember.setHouseName(houseName);
+                    committeeMembers.add(cMember);
+                    Log.d(TAG, "read7CommitteeMembers: " + current.length);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    continue;
+                }
+            }
+            Log.d(TAG, "read7CommitteeMembers: ");
+            return committeeMembers;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        Log.d(TAG, "read7CommitteeMembers: ");
-        return committeeMembers;
+        return null;
     }
 
     //Naveen

@@ -8,6 +8,7 @@ import java.util.List;
  */
 
 public class Sakha implements Serializable {
+    private String sakhaName;
     private Member president;
     private Member vicePresident;
     private Member secretary;
@@ -15,6 +16,14 @@ public class Sakha implements Serializable {
     private List<Member> committeeMembers;
     private List<Member> panchyathCommittee;
     private List<Kudumbayogam> kudumbayogamList;
+
+    public String getSakhaName() {
+        return sakhaName;
+    }
+
+    public void setSakhaName(String sakhaName) {
+        this.sakhaName = sakhaName;
+    }
 
     public List<Kudumbayogam> getKudumbayogamList() {
         return kudumbayogamList;
