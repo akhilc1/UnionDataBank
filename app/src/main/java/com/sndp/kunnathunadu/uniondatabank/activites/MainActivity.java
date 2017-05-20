@@ -373,7 +373,7 @@ MainActivity extends AppCompatActivity
         SakhaDetailsFragment fragment = SakhaDetailsFragment.newInstance(event.getSakhaName());
         FragmentManager manager = getSupportFragmentManager();
         manager.beginTransaction()
-                .replace(R.id.content_main, fragment, SAKHA_DETAILS_FRAGMENT)
+                .add(R.id.content_main, fragment, SAKHA_DETAILS_FRAGMENT)
                 .addToBackStack(SAKHA_DETAILS_FRAGMENT)
                 .commit();
     }

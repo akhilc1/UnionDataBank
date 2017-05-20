@@ -93,6 +93,7 @@ public class UnionSakhaBranchesFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        if (sakhasList.size() == 0) {
         try {
             firebaseDatabase = FirebaseDatabase.getInstance();
             firebaseDatabaseReference = firebaseDatabase.getReference(Constants.FIREBASE_SAKHAS_TAG);
@@ -115,6 +116,7 @@ public class UnionSakhaBranchesFragment extends Fragment {
             Log.d("", "onViewCreated: ");
         } catch (Exception e) {
             e.printStackTrace();
+        }
         }
     }
 
