@@ -98,11 +98,23 @@ MainActivity extends AppCompatActivity
 
                 sakha.setSakhaName(name);
                 sakha = readMainMembers(sheet, sakha);
-                sakha.setCommitteeMembers(read7CommitteeMembers(sheet, sakha));
-                sakha.setPanchyathCommittee(readPanchayathCommittee(sheet, sakha));
+                List<Member> committeMembers = read7CommitteeMembers(sheet, sakha);
+                if (committeMembers != null && committeMembers.size() > 0) {
+                    sakha.getSakhaMembers().addAll(committeMembers);
+                }
+                List<Member> panchayath = readPanchayathCommittee(sheet, sakha);
+                if (panchayath != null && panchayath.size() > 0) {
+                    sakha.getSakhaMembers().addAll(panchayath);
+
+                }
                 sakhaList.add(sakha);
             }
-
+            Collections.sort(sakhaList, new Comparator<Sakha>() {
+                @Override
+                public int compare(Sakha o1, Sakha o2) {
+                    return o1.getSakhaName().compareTo(o2.getSakhaName());
+                }
+            });
             writeSakhaDetailsToFirebase(sakhaList);
             Log.d(TAG, "onCreate: ");
         } catch (IOException e) {
@@ -122,7 +134,7 @@ MainActivity extends AppCompatActivity
                         .setValue(sakha).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
-                        Log.d(TAG, "onComplete: ");
+                        Log.d(TAG, "onComplete: FIREBASE WRITTEN DATA....");
                     }
                 });
             }
@@ -153,6 +165,7 @@ MainActivity extends AppCompatActivity
                     member.setPhoneNumbers(numbers);
                     String houseName = current[2].getContents();
                     member.setHouseName(houseName);
+                    member.setOfficialDesignation("Panchayath Committee Member");
                     panchayathCommitteeMembers.add(member);
 
                 } catch (Exception e) {
@@ -186,6 +199,7 @@ MainActivity extends AppCompatActivity
                     cMember.setPhoneNumbers(phoneNumbers);
                     String houseName = current[3].getContents();
                     cMember.setHouseName(houseName);
+                    cMember.setOfficialDesignation("Committee Member");
                     committeeMembers.add(cMember);
                     Log.d(TAG, "read7CommitteeMembers: " + current.length);
                 } catch (Exception e) {
@@ -218,9 +232,9 @@ MainActivity extends AppCompatActivity
                 List<String> phNos = new ArrayList<>();
                 phNos.add(recordPres[5].getContents());
                 president.setPhoneNumbers(phNos);
+                president.setOfficialDesignation("President");
             }
-            sakhaObject.setPresident(president);
-
+            sakhaObject.getSakhaMembers().add(president);
 
             int vpRow = readSheet.findCell("V. PRESIDENT").getRow();
             Cell[] recordVP = readSheet.getRow(vpRow);
@@ -234,8 +248,9 @@ MainActivity extends AppCompatActivity
                 List<String> phNos = new ArrayList<>();
                 phNos.add(recordVP[5].getContents());
                 vicePresident.setPhoneNumbers(phNos);
+                vicePresident.setOfficialDesignation("Vice President");
             }
-            sakhaObject.setVicePresident(vicePresident);
+            sakhaObject.getSakhaMembers().add(vicePresident);
 
 
             int secRow = readSheet.findCell("SECRETARY").getRow();
@@ -250,9 +265,10 @@ MainActivity extends AppCompatActivity
                 List<String> phNos = new ArrayList<>();
                 phNos.add(recordSec[5].getContents());
                 secretary.setPhoneNumbers(phNos);
+                secretary.setOfficialDesignation("Secretary");
             }
 
-            sakhaObject.setSecretary(secretary);
+            sakhaObject.getSakhaMembers().add(secretary);
 
 
             int unComm = readSheet.findCell("U. COMMITTEE").getRow();
@@ -268,8 +284,9 @@ MainActivity extends AppCompatActivity
                 List<String> phNos = new ArrayList<>();
                 phNos.add(recordunComm[5].getContents());
                 unionComm.setPhoneNumbers(phNos);
+                unionComm.setOfficialDesignation("Union Committee Member");
             }
-            sakhaObject.setUnionCommittee(unionComm);
+            sakhaObject.getSakhaMembers().add(unionComm);
         } catch (Exception e) {
             e.printStackTrace();
         }

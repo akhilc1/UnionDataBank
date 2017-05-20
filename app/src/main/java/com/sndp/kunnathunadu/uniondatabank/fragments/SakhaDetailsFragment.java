@@ -3,12 +3,23 @@ package com.sndp.kunnathunadu.uniondatabank.fragments;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.sndp.kunnathunadu.uniondatabank.R;
+import com.sndp.kunnathunadu.uniondatabank.adapters.SakhaDetailsAdapter;
+import com.sndp.kunnathunadu.uniondatabank.models.Sakha;
+import com.sndp.kunnathunadu.uniondatabank.utils.Constants;
 
 /**
  * Created by akhil on 26/2/17.
@@ -17,6 +28,10 @@ import com.sndp.kunnathunadu.uniondatabank.R;
 public class SakhaDetailsFragment extends Fragment {
     public static final String SAKHA_NAME_PARAMS = "sakha name";
     private String sakahNameToFetch;
+    private Sakha sakhaObject;
+    private RecyclerView recyclerView;
+    private SakhaDetailsAdapter detailsAdapter;
+    private String TAG = "Sakha Details";
 
     public static SakhaDetailsFragment newInstance(String sakhaName) {
 
@@ -42,12 +57,33 @@ public class SakhaDetailsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View parentView = inflater.inflate(R.layout.fragment_sakha_details, container, false);
-
+        recyclerView = (RecyclerView) parentView.findViewById(R.id.recyclerview_sakha);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         return parentView;
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        DatabaseReference dbReference = FirebaseDatabase.getInstance().getReference();
+        dbReference.child(Constants.FIREBASE_SAKHA_DETAILS_TAG).child(sakahNameToFetch).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.getValue() != null) {
+                    sakhaObject = dataSnapshot.getValue(Sakha.class);
+                    detailsAdapter = new SakhaDetailsAdapter(sakhaObject, getActivity());
+                    recyclerView.setAdapter(detailsAdapter);
+                    detailsAdapter.notifyDataSetChanged();
+                    Log.d(TAG, "onDataChange: Data is available");
+                } else {
+                    Log.d(TAG, "onDataChange:  Data is not Available");
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Toast.makeText(getActivity(), "Something Went Wrong", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
