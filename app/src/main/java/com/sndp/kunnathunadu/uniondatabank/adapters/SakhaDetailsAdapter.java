@@ -54,7 +54,6 @@ public class SakhaDetailsAdapter extends RecyclerView.Adapter<SakhaDetailsAdapte
                     }
                 });
             }
-
         }
     }
 
