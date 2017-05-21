@@ -9,7 +9,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -41,7 +40,7 @@ import jxl.Cell;
 import jxl.Sheet;
 
 public class
-MainActivity extends AppCompatActivity
+MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     public static final String UNION_SAKHAS_FRAGMEN = "UnionSakhaBranchesFragment";
     public static final String SAKHA_DETAILS_FRAGMENT = "SakhaDetailsFragment";

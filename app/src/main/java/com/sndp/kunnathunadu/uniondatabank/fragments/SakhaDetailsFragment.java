@@ -21,6 +21,8 @@ import com.sndp.kunnathunadu.uniondatabank.adapters.SakhaDetailsAdapter;
 import com.sndp.kunnathunadu.uniondatabank.models.Sakha;
 import com.sndp.kunnathunadu.uniondatabank.utils.Constants;
 
+import net.bohush.geometricprogressview.GeometricProgressView;
+
 /**
  * Created by akhil on 26/2/17.
  */
@@ -29,6 +31,7 @@ public class SakhaDetailsFragment extends Fragment {
     public static final String SAKHA_NAME_PARAMS = "sakha name";
     private String sakahNameToFetch;
     private Sakha sakhaObject;
+    private GeometricProgressView progressBar;
     private RecyclerView recyclerView;
     private SakhaDetailsAdapter detailsAdapter;
     private String TAG = "Sakha Details";
@@ -47,7 +50,6 @@ public class SakhaDetailsFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments().get(SAKHA_NAME_PARAMS) != null) {
             sakahNameToFetch = (String) getArguments().get(SAKHA_NAME_PARAMS);
-            Toast.makeText(getActivity(), "Sakaha Name: " + sakahNameToFetch, Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(getActivity(), "Sakaha Name: Null", Toast.LENGTH_SHORT).show();
         }
@@ -59,6 +61,8 @@ public class SakhaDetailsFragment extends Fragment {
         View parentView = inflater.inflate(R.layout.fragment_sakha_details, container, false);
         recyclerView = (RecyclerView) parentView.findViewById(R.id.recyclerview_sakha);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        progressBar = (GeometricProgressView) parentView.findViewById(R.id.progress_bar);
+
         return parentView;
     }
 
@@ -74,14 +78,17 @@ public class SakhaDetailsFragment extends Fragment {
                     detailsAdapter = new SakhaDetailsAdapter(sakhaObject, getActivity());
                     recyclerView.setAdapter(detailsAdapter);
                     detailsAdapter.notifyDataSetChanged();
+                    progressBar.setVisibility(View.INVISIBLE);
                     Log.d(TAG, "onDataChange: Data is available");
                 } else {
+                    Toast.makeText(getActivity(), "Data Unavailable", Toast.LENGTH_SHORT).show();
                     Log.d(TAG, "onDataChange:  Data is not Available");
                 }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
+                progressBar.setVisibility(View.INVISIBLE);
                 Toast.makeText(getActivity(), "Something Went Wrong", Toast.LENGTH_SHORT).show();
             }
         });

@@ -27,6 +27,7 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:25.1.1'
     compile 'org.greenrobot:eventbus:3.0.0'
     compile files('libs/jxl-2.6.12.jar')
+    compile 'net.bohush.geometricprogressview:geometricprogressview:1.1.1'
 }
 
 

@@ -15,12 +15,13 @@
         tools:context="com.sndp.kunnathunadu.uniondatabank.fragments.UnionSakhaBranchesFragment"
         tools:listitem="@layout/fragment_item" />
 
-    <android.support.v4.widget.ContentLoadingProgressBar
+    <net.bohush.geometricprogressview.GeometricProgressView
         android:id="@+id/progress_bar"
-        style="?android:attr/android:progressBarStyleSmall"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:indeterminate="true"
-        android:visibility="visible" />
+        app:gp_color="@color/colorAccent"
+        app:gp_duration="500"
+        app:gp_number_of_angles="7" />
+
 </RelativeLayout>

@@ -11,7 +11,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -21,6 +20,8 @@ import com.google.firebase.database.ValueEventListener;
 import com.sndp.kunnathunadu.uniondatabank.R;
 import com.sndp.kunnathunadu.uniondatabank.adapters.SakhaListRecyclerAdapter;
 import com.sndp.kunnathunadu.uniondatabank.utils.Constants;
+
+import net.bohush.geometricprogressview.GeometricProgressView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +39,7 @@ public class UnionSakhaBranchesFragment extends Fragment {
     private String TAG = getClass().getSimpleName();
     private int mColumnCount = 1;
     private List<String> sakhasList;
-    private ProgressBar progressBar;
+    private GeometricProgressView progressBar;
     private RecyclerView recyclerView;
     private SakhaListRecyclerAdapter adapter;
     private FirebaseDatabase firebaseDatabase;
@@ -65,7 +66,6 @@ public class UnionSakhaBranchesFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         if (getArguments() != null) {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
         }
@@ -75,7 +75,8 @@ public class UnionSakhaBranchesFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_item_list, container, false);
-        progressBar = (ProgressBar) view.findViewById(R.id.progress_bar);
+        progressBar = (GeometricProgressView) view.findViewById(R.id.progress_bar);
+        progressBar.bringToFront();
         recyclerView = (RecyclerView) view.findViewById(R.id.list);
 
         if (mColumnCount <= 1) {
@@ -94,29 +95,29 @@ public class UnionSakhaBranchesFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         if (sakhasList.size() == 0) {
-        try {
-            firebaseDatabase = FirebaseDatabase.getInstance();
-            firebaseDatabaseReference = firebaseDatabase.getReference(Constants.FIREBASE_SAKHAS_TAG);
-            firebaseDatabaseReference.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    Log.d(TAG, "onDataChange: ");
-                    sakhasList = (List<String>) dataSnapshot.getValue();
-                    adapter.setSakhas(sakhasList);
-                    adapter.notifyDataSetChanged();
-                    progressBar.setVisibility(View.INVISIBLE);
-                }
+            try {
+                firebaseDatabase = FirebaseDatabase.getInstance();
+                firebaseDatabaseReference = firebaseDatabase.getReference(Constants.FIREBASE_SAKHAS_TAG);
+                firebaseDatabaseReference.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Log.d(TAG, "onDataChange: ");
+                        sakhasList = (List<String>) dataSnapshot.getValue();
+                        adapter.setSakhas(sakhasList);
+                        adapter.notifyDataSetChanged();
+                        progressBar.setVisibility(View.INVISIBLE);
+                    }
 
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    Log.d(TAG, "onCancelled: ");
-                }
-            });
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Log.d(TAG, "onCancelled: ");
+                    }
+                });
 
-            Log.d("", "onViewCreated: ");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+                Log.d("", "onViewCreated: ");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
