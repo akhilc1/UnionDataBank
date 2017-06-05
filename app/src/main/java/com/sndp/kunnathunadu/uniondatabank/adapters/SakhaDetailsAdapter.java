@@ -8,10 +8,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.sndp.kunnathunadu.uniondatabank.R;
+import com.sndp.kunnathunadu.uniondatabank.greenrobot.events.ShowEditMemberLayoutEvent;
 import com.sndp.kunnathunadu.uniondatabank.models.Member;
 import com.sndp.kunnathunadu.uniondatabank.models.Sakha;
+
+import org.greenrobot.eventbus.EventBus;
 
 /**
  * Created by akhil on 20/5/17.
@@ -21,9 +25,12 @@ public class SakhaDetailsAdapter extends RecyclerView.Adapter<SakhaDetailsAdapte
     private Sakha sakha;
     private Context context;
 
-    public SakhaDetailsAdapter(Sakha sakha, Context context) {
-        this.sakha = sakha;
+    public SakhaDetailsAdapter(Context context) {
         this.context = context;
+    }
+
+    public void setSakhaObject(Sakha sakha) {
+        this.sakha = sakha;
     }
 
     @Override
@@ -33,12 +40,12 @@ public class SakhaDetailsAdapter extends RecyclerView.Adapter<SakhaDetailsAdapte
     }
 
     @Override
-    public void onBindViewHolder(SakhaDetailsViewHolder holder, int position) {
+    public void onBindViewHolder(SakhaDetailsViewHolder holder, final int position) {
         if (sakha != null) {
             final Member member = sakha.getSakhaMembers().get(position);
             holder.designationTV.setText(member.getOfficialDesignation());
             String nameHouseString = member.getName();
-            if (!member.getHouseName().isEmpty()) {
+            if (member.getHouseName() != null && !member.getHouseName().isEmpty()) {
                 nameHouseString += member.getHouseName();
             }
             holder.nameHouseTV.setText(nameHouseString);
@@ -54,6 +61,14 @@ public class SakhaDetailsAdapter extends RecyclerView.Adapter<SakhaDetailsAdapte
                     }
                 });
             }
+            holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    EventBus.getDefault().post(new ShowEditMemberLayoutEvent(position, member, sakha.getSakhaName()));
+                    Toast.makeText(v.getContext(), "Long CLick.......", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+            });
         }
     }
 

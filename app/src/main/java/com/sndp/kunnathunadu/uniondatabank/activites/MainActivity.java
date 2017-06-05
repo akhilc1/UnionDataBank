@@ -45,6 +45,7 @@ MainActivity extends BaseActivity
     public static final String UNION_SAKHAS_FRAGMEN = "UnionSakhaBranchesFragment";
     public static final String SAKHA_DETAILS_FRAGMENT = "SakhaDetailsFragment";
     private Sakha sakha;
+    private Toolbar toolbar;
     private List<Sakha> sakhaList = new ArrayList<>();
     private String TAG = getClass().getSimpleName();
 
@@ -52,7 +53,7 @@ MainActivity extends BaseActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -364,6 +365,10 @@ MainActivity extends BaseActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    public void setToolbarTitle(String titleString) {
+        toolbar.setTitle(titleString);
     }
 
     @Subscribe(threadMode = ThreadMode.POSTING)

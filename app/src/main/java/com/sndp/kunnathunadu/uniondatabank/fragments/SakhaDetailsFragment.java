@@ -17,11 +17,17 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.sndp.kunnathunadu.uniondatabank.R;
+import com.sndp.kunnathunadu.uniondatabank.activites.MainActivity;
 import com.sndp.kunnathunadu.uniondatabank.adapters.SakhaDetailsAdapter;
+import com.sndp.kunnathunadu.uniondatabank.greenrobot.events.ShowEditMemberLayoutEvent;
 import com.sndp.kunnathunadu.uniondatabank.models.Sakha;
 import com.sndp.kunnathunadu.uniondatabank.utils.Constants;
 
 import net.bohush.geometricprogressview.GeometricProgressView;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 /**
  * Created by akhil on 26/2/17.
@@ -35,6 +41,7 @@ public class SakhaDetailsFragment extends Fragment {
     private RecyclerView recyclerView;
     private SakhaDetailsAdapter detailsAdapter;
     private String TAG = "Sakha Details";
+    private View updateMemberView;
 
     public static SakhaDetailsFragment newInstance(String sakhaName) {
 
@@ -50,9 +57,26 @@ public class SakhaDetailsFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments().get(SAKHA_NAME_PARAMS) != null) {
             sakahNameToFetch = (String) getArguments().get(SAKHA_NAME_PARAMS);
-        } else {
-            Toast.makeText(getActivity(), "Sakaha Name: Null", Toast.LENGTH_SHORT).show();
+            ((MainActivity) getActivity()).setToolbarTitle(sakahNameToFetch);
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        ((MainActivity) getActivity()).setToolbarTitle(getString(R.string.app_name));
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
     }
 
     @Nullable
@@ -62,21 +86,27 @@ public class SakhaDetailsFragment extends Fragment {
         recyclerView = (RecyclerView) parentView.findViewById(R.id.recyclerview_sakha);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         progressBar = (GeometricProgressView) parentView.findViewById(R.id.progress_bar);
-
         return parentView;
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        readAndSetSakha();
+    }
+
+    private void readAndSetSakha() {
         DatabaseReference dbReference = FirebaseDatabase.getInstance().getReference();
         dbReference.child(Constants.FIREBASE_SAKHA_DETAILS_TAG).child(sakahNameToFetch).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.getValue() != null) {
                     sakhaObject = dataSnapshot.getValue(Sakha.class);
-                    detailsAdapter = new SakhaDetailsAdapter(sakhaObject, getActivity());
-                    recyclerView.setAdapter(detailsAdapter);
+                    if (detailsAdapter == null) {
+                        detailsAdapter = new SakhaDetailsAdapter(getActivity());
+                        recyclerView.setAdapter(detailsAdapter);
+                    }
+                    detailsAdapter.setSakhaObject(sakhaObject);
                     detailsAdapter.notifyDataSetChanged();
                     progressBar.setVisibility(View.INVISIBLE);
                     Log.d(TAG, "onDataChange: Data is available");
@@ -92,5 +122,19 @@ public class SakhaDetailsFragment extends Fragment {
                 Toast.makeText(getActivity(), "Something Went Wrong", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    @Subscribe(threadMode = ThreadMode.POSTING)
+    public void onMessageEvent(ShowEditMemberLayoutEvent event) {
+        Toast.makeText(getActivity(), "ShowEdit Member layout frag", Toast.LENGTH_SHORT).show();
+        UpdateMemberDialogFragment fragment = new UpdateMemberDialogFragment();
+        fragment.setSakhaName(event.getSakhaName());
+        fragment.setAdapterPosition(event.getPosition());
+        fragment.setMember(event.getMember());
+        getActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .add(R.id.content_main, fragment)
+                .addToBackStack("Dialog frag")
+                .commit();
     }
 }
