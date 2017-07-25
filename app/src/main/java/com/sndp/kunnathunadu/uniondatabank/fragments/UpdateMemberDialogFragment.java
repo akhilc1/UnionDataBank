@@ -20,10 +20,6 @@ import com.sndp.kunnathunadu.uniondatabank.utils.Constants;
 
 import java.util.ArrayList;
 
-/**
- * Created by akhil on 27/5/17.
- */
-
 public class UpdateMemberDialogFragment extends DialogFragment {
     private Member member;
     private String sakhaName;
@@ -66,7 +62,7 @@ public class UpdateMemberDialogFragment extends DialogFragment {
                     member.setName(name);
                 }
                 if (phone.length() > 0) {
-                    ArrayList<String> phoneList = new ArrayList<String>();
+                    ArrayList<String> phoneList = new ArrayList<>();
                     phoneList.add(phone);
                     member.setPhoneNumbers(phoneList);
                 }
@@ -94,7 +90,9 @@ public class UpdateMemberDialogFragment extends DialogFragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         nameET.setText(member.getName());
-        phoneET.setText(member.getPhoneNumbers().get(0));
+        if (member.getHouseName() != null && member.getPhoneNumbers().size() > 0) {
+            phoneET.setText(member.getPhoneNumbers().get(0));
+        }
         houseNameET.setText(member.getHouseName());
     }
 }
